@@ -40,8 +40,7 @@ bool SessionManager::initialize(const Config& config) {
 }
 
 std::string SessionManager::startSession(uint32_t playerId) {
-    std::lock_guard<std::mutex> activeLock(activeMutex_);
-    std::lock_guard<std::mutex> sessionsLock(sessionsMutex_);
+    std::scoped_lock lock(activeMutex_, sessionsMutex_);
 
     // End any existing active session
     if (!activeSessionId_.empty()) {
@@ -79,8 +78,7 @@ std::string SessionManager::startSession(uint32_t playerId) {
 }
 
 void SessionManager::endSession(const std::string& sessionId, const ChallengeResult& result) {
-    std::lock_guard<std::mutex> activeLock(activeMutex_);
-    std::lock_guard<std::mutex> sessionsLock(sessionsMutex_);
+    std::scoped_lock lock(activeMutex_, sessionsMutex_);
 
     auto it = sessions_.find(sessionId);
     if (it == sessions_.end()) {
@@ -115,8 +113,7 @@ void SessionManager::endSession(const std::string& sessionId, const ChallengeRes
 }
 
 void SessionManager::cancelSession(const std::string& sessionId) {
-    std::lock_guard<std::mutex> activeLock(activeMutex_);
-    std::lock_guard<std::mutex> sessionsLock(sessionsMutex_);
+    std::scoped_lock lock(activeMutex_, sessionsMutex_);
 
     auto it = sessions_.find(sessionId);
     if (it == sessions_.end()) {
@@ -153,8 +150,7 @@ SessionData* SessionManager::getSession(const std::string& sessionId) {
 }
 
 SessionData* SessionManager::getActiveSession() {
-    std::lock_guard<std::mutex> activeLock(activeMutex_);
-    std::lock_guard<std::mutex> sessionsLock(sessionsMutex_);
+    std::scoped_lock lock(activeMutex_, sessionsMutex_);
 
     if (activeSessionId_.empty()) {
         return nullptr;
@@ -306,8 +302,7 @@ void SessionManager::exportSessions(const std::string& filepath) const {
 }
 
 void SessionManager::checkTimeouts() {
-    std::lock_guard<std::mutex> activeLock(activeMutex_);
-    std::lock_guard<std::mutex> sessionsLock(sessionsMutex_);
+    std::scoped_lock lock(activeMutex_, sessionsMutex_);
 
     if (activeSessionId_.empty()) {
         return;

@@ -4,6 +4,7 @@
  */
 
 #include "Application.h"
+#include "../include/UITheme.h"
 #include "kiosk/KioskManager.h"
 #include "kiosk/SessionManager.h"
 #include <iostream>
@@ -84,7 +85,7 @@ void Application::render() {
     }
 
     // Clear background
-    float clearColor[4] = { 0.05f, 0.1f, 0.15f, 1.0f };
+    float clearColor[4] = { 0.039f, 0.086f, 0.157f, 1.0f };  // #0A1628 FIFA Navy
     d3dContext_->ClearRenderTargetView(renderTarget_, clearColor);
 
     // Start ImGui frame
@@ -122,8 +123,11 @@ void Application::render() {
 
     // Render ImGui
     ImGui::Render();
-    d3dContext_->OMSetRenderTargets(1, &renderTarget_, nullptr);
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    ImDrawData* drawData = ImGui::GetDrawData();
+    if (drawData) {
+        d3dContext_->OMSetRenderTargets(1, &renderTarget_, nullptr);
+        ImGui_ImplDX11_RenderDrawData(drawData);
+    }
 
     // Present
     swapChain_->Present(1, 0);
@@ -136,7 +140,11 @@ void Application::onResize(int width, int height) {
     height_ = height;
 
     cleanupRenderTarget();
-    swapChain_->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+    HRESULT hr = swapChain_->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+    if (FAILED(hr)) {
+        logError("Failed to resize swap chain buffers");
+        return;
+    }
     createRenderTarget();
 }
 
@@ -209,10 +217,21 @@ void Application::cleanupD3DDevice() {
 }
 
 bool Application::createRenderTarget() {
-    ID3D11Texture2D* backBuffer;
-    swapChain_->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
-    d3dDevice_->CreateRenderTargetView(backBuffer, nullptr, &renderTarget_);
+    ID3D11Texture2D* backBuffer = nullptr;
+    HRESULT hr = swapChain_->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
+    if (FAILED(hr) || !backBuffer) {
+        logError("Failed to get back buffer from swap chain");
+        return false;
+    }
+
+    hr = d3dDevice_->CreateRenderTargetView(backBuffer, nullptr, &renderTarget_);
     backBuffer->Release();
+
+    if (FAILED(hr)) {
+        logError("Failed to create render target view");
+        return false;
+    }
+
     return renderTarget_ != nullptr;
 }
 
@@ -229,10 +248,26 @@ bool Application::initImGui() {
 
     // Setup style for kiosk
     ImGui::StyleColorsDark();
+
+    // FIFA 2026 Theme
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowRounding = 0.0f;
-    style.FrameRounding = 8.0f;
+    style.FrameRounding = kinect::theme::layout::CORNER_RADIUS;
+    style.FramePadding = ImVec2(24, 16);
+    style.FrameBorderSize = 2.0f;
+    style.ItemSpacing = ImVec2(16, 12);
+    style.GrabMinSize = kinect::theme::layout::MIN_TOUCH_TARGET;
     style.GrabRounding = 8.0f;
+
+    ImVec4* colors = style.Colors;
+    colors[ImGuiCol_WindowBg] = ImVec4(0.04f, 0.09f, 0.16f, 0.95f);
+    colors[ImGuiCol_FrameBg] = ImVec4(0.12f, 0.18f, 0.28f, 1.00f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.00f, 0.83f, 0.67f, 0.40f);
+    colors[ImGuiCol_Button] = ImVec4(0.00f, 0.83f, 0.67f, 1.00f);
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.00f, 0.93f, 0.77f, 1.00f);
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.00f, 0.73f, 0.57f, 1.00f);
+    colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+    colors[ImGuiCol_Border] = ImVec4(0.00f, 0.83f, 0.67f, 0.30f);
 
     // Scale for portrait display
     float scale = static_cast<float>(width_) / 1080.0f;
@@ -266,17 +301,24 @@ void Application::renderAttractMode() {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
     float centerX = width_ / 2.0f;
 
+    // Animated glow effect behind title
+    float time = static_cast<float>(ImGui::GetTime());
+    float pulse = 0.5f + 0.5f * sinf(time * 2.0f);
+    float glowRadius = 150.0f + pulse * 50.0f;
+    ImU32 glowColor = IM_COL32(0, 212, 171, static_cast<int>(40 * pulse));
+    drawList->AddCircleFilled(ImVec2(centerX, height_ * 0.25f), glowRadius, glowColor);
+
     // Title
     const char* title = "KINECT FOOTBALL";
     ImVec2 titleSize = ImGui::CalcTextSize(title);
     drawList->AddText(ImVec2(centerX - titleSize.x / 2, height_ * 0.25f),
-        IM_COL32(0, 200, 255, 255), title);
+        kinect::theme::colors::TEAL, title);
 
     // Subtitle
     const char* subtitle = "FIFA 2026 SIMULATOR";
     ImVec2 subSize = ImGui::CalcTextSize(subtitle);
     drawList->AddText(ImVec2(centerX - subSize.x / 2, height_ * 0.32f),
-        IM_COL32(255, 215, 0, 255), subtitle);
+        kinect::theme::colors::GOLD, subtitle);
 
     // Instructions
     const char* instructions = "Press SPACE or step in front of camera";
@@ -285,8 +327,8 @@ void Application::renderAttractMode() {
         IM_COL32(200, 200, 200, 255), instructions);
 
     // Pulsing indicator
-    float pulse = 0.5f + 0.5f * sinf(static_cast<float>(ImGui::GetTime()) * 3.0f);
-    ImU32 pulseColor = IM_COL32(0, static_cast<int>(255 * pulse), 0, 255);
+    float indicatorPulse = 0.5f + 0.5f * sinf(time * 3.0f);
+    ImU32 pulseColor = IM_COL32(0, static_cast<int>(255 * indicatorPulse), 0, 255);
     drawList->AddCircleFilled(ImVec2(centerX, height_ * 0.75f), 20.0f, pulseColor);
 
     // Demo mode indicator
@@ -456,11 +498,33 @@ void Application::renderError() {
     ImGui::Begin("Error", nullptr,
         ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
     float centerX = width_ / 2.0f;
-    ImGui::SetCursorPos(ImVec2(centerX - 100, height_ / 2.0f));
-    ImGui::TextColored(ImVec4(1, 0, 0, 1), "ERROR");
-    ImGui::SetCursorPos(ImVec2(centerX - 150, height_ / 2.0f + 50));
-    ImGui::Text("Press F12 to restart Kinect");
+    float centerY = height_ / 2.0f;
+
+    // Friendly error message
+    const char* message = "Oops! Please wait...";
+    ImVec2 messageSize = ImGui::CalcTextSize(message);
+
+    drawList->AddText(nullptr, 48.0f, ImVec2(centerX - messageSize.x, centerY - 60),
+        kinect::theme::colors::CORAL, message);
+
+    // Loading indicator (spinning circle)
+    float time = static_cast<float>(ImGui::GetTime());
+    float angle = time * 3.0f;
+    float radius = 40.0f;
+    int segments = 12;
+
+    for (int i = 0; i < segments; i++) {
+        float segmentAngle = (3.14159f * 2.0f * i / segments) + angle;
+        float alpha = (float)(i + 1) / segments;
+        ImU32 color = IM_COL32(0, 212, 171, static_cast<int>(255 * alpha));
+
+        float x = centerX + cosf(segmentAngle) * radius;
+        float y = centerY + 40 + sinf(segmentAngle) * radius;
+
+        drawList->AddCircleFilled(ImVec2(x, y), 6.0f, color);
+    }
 
     ImGui::End();
 }
@@ -474,12 +538,59 @@ void Application::renderGoalVisualization() {
     float goalW = static_cast<float>(width_) - 180.0f;
     float goalH = 500.0f;
 
-    // Goal frame
-    ImU32 goalColor = IM_COL32(255, 255, 255, 255);
-    drawList->AddRect(
+    // Net diagonal line pattern in background
+    ImU32 netColor = IM_COL32(255, 255, 255, 30);
+    float netSpacing = 40.0f;
+    for (float i = 0; i < goalW + goalH; i += netSpacing) {
+        // Diagonal lines
+        drawList->AddLine(
+            ImVec2(goalX + i, goalY),
+            ImVec2(goalX, goalY + i),
+            netColor, 1.0f
+        );
+        drawList->AddLine(
+            ImVec2(goalX + goalW - i, goalY),
+            ImVec2(goalX + goalW, goalY + i),
+            netColor, 1.0f
+        );
+    }
+
+    // Goal frame with post thickness (20px width posts)
+    float postThickness = 20.0f;
+
+    // Post shadows (for depth)
+    float shadowOffset = 4.0f;
+    drawList->AddRectFilled(
+        ImVec2(goalX + shadowOffset, goalY + shadowOffset),
+        ImVec2(goalX + postThickness + shadowOffset, goalY + goalH + shadowOffset),
+        kinect::theme::colors::GOAL_POST_SHADOW
+    );
+    drawList->AddRectFilled(
+        ImVec2(goalX + goalW - postThickness + shadowOffset, goalY + shadowOffset),
+        ImVec2(goalX + goalW + shadowOffset, goalY + goalH + shadowOffset),
+        kinect::theme::colors::GOAL_POST_SHADOW
+    );
+    drawList->AddRectFilled(
+        ImVec2(goalX + shadowOffset, goalY + shadowOffset),
+        ImVec2(goalX + goalW + shadowOffset, goalY + postThickness + shadowOffset),
+        kinect::theme::colors::GOAL_POST_SHADOW
+    );
+
+    // Goal posts
+    drawList->AddRectFilled(
         ImVec2(goalX, goalY),
+        ImVec2(goalX + postThickness, goalY + goalH),
+        kinect::theme::colors::GOAL_POST
+    );
+    drawList->AddRectFilled(
+        ImVec2(goalX + goalW - postThickness, goalY),
         ImVec2(goalX + goalW, goalY + goalH),
-        goalColor, 0.0f, 0, 4.0f
+        kinect::theme::colors::GOAL_POST
+    );
+    drawList->AddRectFilled(
+        ImVec2(goalX, goalY),
+        ImVec2(goalX + goalW, goalY + postThickness),
+        kinect::theme::colors::GOAL_POST
     );
 
     // 3x3 grid
@@ -514,6 +625,25 @@ void Application::renderGoalVisualization() {
         ImVec2(goalX + (highlightCol + 1) * cellW, goalY + (highlightRow + 1) * cellH),
         highlightColor
     );
+
+    // Crosshair animation in target zone center
+    float targetCenterX = goalX + (highlightCol + 0.5f) * cellW;
+    float targetCenterY = goalY + (highlightRow + 0.5f) * cellH;
+    float crosshairSize = 30.0f;
+    float crosshairPulse = 0.7f + 0.3f * sinf(time * 8.0f);
+    ImU32 crosshairColor = IM_COL32(0, 212, 171, static_cast<int>(255 * crosshairPulse));
+
+    drawList->AddLine(
+        ImVec2(targetCenterX - crosshairSize, targetCenterY),
+        ImVec2(targetCenterX + crosshairSize, targetCenterY),
+        crosshairColor, 3.0f
+    );
+    drawList->AddLine(
+        ImVec2(targetCenterX, targetCenterY - crosshairSize),
+        ImVec2(targetCenterX, targetCenterY + crosshairSize),
+        crosshairColor, 3.0f
+    );
+    drawList->AddCircle(ImVec2(targetCenterX, targetCenterY), 15.0f, crosshairColor, 0, 2.0f);
 }
 
 void Application::renderPowerMeter(float power) {
@@ -572,8 +702,10 @@ void Application::renderDemoSkeleton() {
     float time = static_cast<float>(ImGui::GetTime());
 
     // Animated demo skeleton
-    ImU32 jointColor = IM_COL32(0, 255, 255, 255);
-    ImU32 boneColor = IM_COL32(0, 200, 200, 200);
+    ImU32 jointColor = kinect::theme::colors::JOINT;
+    ImU32 boneColor = kinect::theme::colors::BONE;
+    ImU32 kickFootColor = kinect::theme::colors::KICK_FOOT;
+    ImU32 glowColor = kinect::theme::colors::TEAL_GLOW;
 
     // Body center
     ImVec2 pelvis(centerX, centerY);
@@ -599,6 +731,27 @@ void Application::renderDemoSkeleton() {
     ImVec2 rightShoulder(centerX + 50, centerY - 90);
     ImVec2 rightElbow(centerX + 80, centerY - 50);
     ImVec2 rightHand(centerX + 90, centerY - 10);
+
+    // Draw glow layer under bones
+    drawList->AddLine(pelvis, spine, glowColor, 8.0f);
+    drawList->AddLine(spine, chest, glowColor, 8.0f);
+    drawList->AddLine(chest, head, glowColor, 8.0f);
+
+    drawList->AddLine(pelvis, leftHip, glowColor, 8.0f);
+    drawList->AddLine(leftHip, leftKnee, glowColor, 8.0f);
+    drawList->AddLine(leftKnee, leftFoot, glowColor, 8.0f);
+
+    drawList->AddLine(pelvis, rightHip, glowColor, 8.0f);
+    drawList->AddLine(rightHip, rightKnee, glowColor, 8.0f);
+    drawList->AddLine(rightKnee, rightFoot, glowColor, 8.0f);
+
+    drawList->AddLine(chest, leftShoulder, glowColor, 8.0f);
+    drawList->AddLine(leftShoulder, leftElbow, glowColor, 8.0f);
+    drawList->AddLine(leftElbow, leftHand, glowColor, 8.0f);
+
+    drawList->AddLine(chest, rightShoulder, glowColor, 8.0f);
+    drawList->AddLine(rightShoulder, rightElbow, glowColor, 8.0f);
+    drawList->AddLine(rightElbow, rightHand, glowColor, 8.0f);
 
     // Draw bones
     drawList->AddLine(pelvis, spine, boneColor, 4.0f);
@@ -630,7 +783,7 @@ void Application::renderDemoSkeleton() {
 
     drawList->AddCircleFilled(leftHip, r, jointColor);
     drawList->AddCircleFilled(leftKnee, r, jointColor);
-    drawList->AddCircleFilled(leftFoot, r, IM_COL32(255, 0, 255, 255)); // Kick foot
+    drawList->AddCircleFilled(leftFoot, r, kickFootColor); // Kick foot
 
     drawList->AddCircleFilled(rightHip, r, jointColor);
     drawList->AddCircleFilled(rightKnee, r, jointColor);
@@ -652,16 +805,46 @@ void Application::renderScoreDisplay() {
     int remaining = 60 - static_cast<int>(std::chrono::duration<float>(elapsed).count());
     if (remaining < 0) remaining = 0;
 
-    char timeStr[32];
-    snprintf(timeStr, sizeof(timeStr), "TIME: %d", remaining);
-    drawList->AddText(ImVec2(width_ - 200.0f, 100.0f),
-        IM_COL32(255, 255, 255, 255), timeStr);
+    // Panel background
+    float panelX = width_ - 320.0f;
+    float panelY = 60.0f;
+    float panelW = 260.0f;
+    float panelH = 180.0f;
 
+    drawList->AddRectFilled(
+        ImVec2(panelX, panelY),
+        ImVec2(panelX + panelW, panelY + panelH),
+        kinect::theme::colors::PANEL_BG
+    );
+
+    // Border
+    drawList->AddRect(
+        ImVec2(panelX, panelY),
+        ImVec2(panelX + panelW, panelY + panelH),
+        kinect::theme::colors::BORDER, 0.0f, 0, 2.0f
+    );
+
+    // Time display (48pt font size - scale up from base)
+    char timeStr[32];
+    snprintf(timeStr, sizeof(timeStr), "%d", remaining);
+
+    // Color coding for low time (red when under 10 seconds)
+    ImU32 timeColor = remaining < 10 ? kinect::theme::colors::CORAL : IM_COL32(255, 255, 255, 255);
+
+    drawList->AddText(nullptr, 48.0f, ImVec2(panelX + 20, panelY + 20), timeColor, timeStr);
+
+    const char* timeLabel = "SECONDS";
+    drawList->AddText(ImVec2(panelX + 20, panelY + 75), IM_COL32(180, 180, 180, 255), timeLabel);
+
+    // Score display (40pt font size)
     int demoScore = static_cast<int>(std::chrono::duration<float>(elapsed).count()) * 50;
     char scoreStr[32];
-    snprintf(scoreStr, sizeof(scoreStr), "SCORE: %d", demoScore);
-    drawList->AddText(ImVec2(width_ - 200.0f, 140.0f),
-        IM_COL32(255, 215, 0, 255), scoreStr);
+    snprintf(scoreStr, sizeof(scoreStr), "%d", demoScore);
+
+    drawList->AddText(nullptr, 40.0f, ImVec2(panelX + 20, panelY + 100), kinect::theme::colors::GOLD, scoreStr);
+
+    const char* scoreLabel = "POINTS";
+    drawList->AddText(ImVec2(panelX + 20, panelY + 145), IM_COL32(180, 180, 180, 255), scoreLabel);
 }
 
 // State management

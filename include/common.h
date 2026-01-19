@@ -8,6 +8,7 @@
 #include <vector>
 #include <atomic>
 #include <mutex>
+#include <cmath>
 
 // Logging macros
 #define LOG_INFO(msg) std::cout << "[INFO] " << msg << std::endl

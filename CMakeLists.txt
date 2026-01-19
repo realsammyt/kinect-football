@@ -97,14 +97,20 @@ set(MOTION_SOURCES
     src/motion/HeaderDetector.cpp
 )
 
-set(GAME_SOURCES
-    src/game/ChallengeBase.cpp
-    src/game/GameManager.cpp
-    src/game/AccuracyChallenge.cpp
-    src/game/PowerChallenge.cpp
-    src/game/PenaltyShootout.cpp
-    src/game/ScoringEngine.cpp
-)
+# Game sources require OpenCV for rendering
+if(OpenCV_FOUND)
+    set(GAME_SOURCES
+        src/game/ChallengeBase.cpp
+        src/game/GameManager.cpp
+        src/game/AccuracyChallenge.cpp
+        src/game/PowerChallenge.cpp
+        src/game/PenaltyShootout.cpp
+        src/game/ScoringEngine.cpp
+    )
+else()
+    set(GAME_SOURCES "")
+    message(STATUS "OpenCV not found - game module disabled")
+endif()
 
 set(GUI_SOURCES
     src/gui/Application.cpp

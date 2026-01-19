@@ -2,9 +2,13 @@
 
 #include "../../include/common.h"
 #include <unordered_map>
+#include <map>
 #include <deque>
 #include <mutex>
 #include <functional>
+
+namespace kinect {
+namespace kiosk {
 
 /**
  * SessionManager handles:
@@ -115,3 +119,6 @@ private:
     void logSessionStart(const SessionData& session);
     void logSessionEnd(const SessionData& session);
 };
+
+} // namespace kiosk
+} // namespace kinect

@@ -113,7 +113,7 @@ void KickDetector::updatePhase(uint64_t timestamp) {
             }
             break;
 
-        case KickPhase::Acceleration:
+        case KickPhase::Acceleration: {
             // Track peak velocity
             float currentSpeed = footHistory.getCurrentSpeed();
             if (currentSpeed > peakVelocity_) {
@@ -129,6 +129,7 @@ void KickDetector::updatePhase(uint64_t timestamp) {
                 }
             }
             break;
+        }
 
         case KickPhase::Contact:
             // Contact is brief, quickly move to follow-through

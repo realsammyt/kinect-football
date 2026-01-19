@@ -70,7 +70,7 @@ void HeaderDetector::updatePhase(uint64_t timestamp) {
             }
             break;
 
-        case HeaderPhase::Preparation:
+        case HeaderPhase::Preparation: {
             // Track peak velocity during preparation
             float currentSpeed = headHistory_.getCurrentSpeed();
             if (currentSpeed > peakHeadVelocity_) {
@@ -91,6 +91,7 @@ void HeaderDetector::updatePhase(uint64_t timestamp) {
                 reset();
             }
             break;
+        }
 
         case HeaderPhase::Contact:
             // Contact is brief, quickly move to recovery

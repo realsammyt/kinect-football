@@ -1,6 +1,9 @@
 #include "KioskManager.h"
 #include <iostream>
 
+namespace kinect {
+namespace kiosk {
+
 KioskManager::KioskManager()
     : running_(false)
     , systemHealthy_(true)
@@ -56,7 +59,16 @@ void KioskManager::stop() {
 
 void KioskManager::updateHealth(const HealthMetrics& metrics) {
     std::lock_guard<std::mutex> lock(healthMutex_);
-    currentHealth_ = metrics;
+    // Copy atomic values individually (std::atomic is not copy-assignable)
+    currentHealth_.framesProcessed.store(metrics.framesProcessed.load());
+    currentHealth_.framesDropped.store(metrics.framesDropped.load());
+    currentHealth_.kicksDetected.store(metrics.kicksDetected.load());
+    currentHealth_.sessionsCompleted.store(metrics.sessionsCompleted.load());
+    currentHealth_.avgFps.store(metrics.avgFps.load());
+    currentHealth_.kinectHealthy.store(metrics.kinectHealthy.load());
+    currentHealth_.trackerHealthy.store(metrics.trackerHealthy.load());
+    currentHealth_.lastFrameTime = metrics.lastFrameTime;
+    currentHealth_.startTime = metrics.startTime;
 }
 
 bool KioskManager::isHealthy() const {
@@ -247,3 +259,6 @@ void KioskManager::logHealthStatus() const {
     LOG_DEBUG("  Sessions completed: " << currentHealth_.sessionsCompleted.load());
     LOG_DEBUG("  System healthy: " << (systemHealthy_ ? "YES" : "NO"));
 }
+
+} // namespace kiosk
+} // namespace kinect

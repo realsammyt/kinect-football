@@ -19,15 +19,6 @@ struct ImGuiContext;
 namespace kinect {
 
 // Forward declarations
-namespace motion {
-    class KickDetector;
-    class KickAnalyzer;
-}
-
-namespace game {
-    class GameManager;
-}
-
 namespace kiosk {
     class KioskManager;
     class SessionManager;
@@ -130,17 +121,17 @@ private:
     // ImGui
     ImGuiContext* imguiContext_ = nullptr;
 
-    // Kinect components
-    std::unique_ptr<core::KinectDevice> kinect_;
-    std::unique_ptr<core::BodyTracker> tracker_;
-    std::unique_ptr<core::PlayerTracker> playerTracker_;
+    // Kinect components (disabled in demo mode)
+    // std::unique_ptr<core::KinectDevice> kinect_;
+    // std::unique_ptr<core::BodyTracker> tracker_;
+    // std::unique_ptr<core::PlayerTracker> playerTracker_;
 
-    // Motion analysis
-    std::unique_ptr<motion::KickDetector> kickDetector_;
-    std::unique_ptr<motion::KickAnalyzer> kickAnalyzer_;
+    // Motion analysis (disabled in demo mode)
+    // std::unique_ptr<motion::KickDetector> kickDetector_;
+    // std::unique_ptr<motion::KickAnalyzer> kickAnalyzer_;
 
-    // Game logic
-    std::unique_ptr<game::GameManager> gameManager_;
+    // Game logic (disabled in demo mode)
+    // std::unique_ptr<game::GameManager> gameManager_;
 
     // Kiosk management
     std::unique_ptr<kiosk::KioskManager> kioskManager_;
@@ -193,6 +184,7 @@ private:
     void renderGoalVisualization();
     void renderPowerMeter(float power);
     void renderPlayerSkeleton(const core::BodyData& body);
+    void renderDemoSkeleton();
     void renderScoreDisplay();
 
     // State transitions

@@ -6,6 +6,9 @@
 
 namespace fs = std::filesystem;
 
+namespace kinect {
+namespace kiosk {
+
 SessionManager::SessionManager()
     : activePlayerId_(0)
 {
@@ -441,3 +444,6 @@ void SessionManager::logSessionEnd(const SessionData& session) {
     LOG_INFO("  Accuracy: " << session.result.accuracy << "%");
     LOG_INFO("  Shared: " << (session.wasShared ? "Yes" : "No"));
 }
+
+} // namespace kiosk
+} // namespace kinect

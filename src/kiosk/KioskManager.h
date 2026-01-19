@@ -6,6 +6,9 @@
 #include <chrono>
 #include <functional>
 
+namespace kinect {
+namespace kiosk {
+
 /**
  * KioskManager handles:
  * - System health monitoring
@@ -111,3 +114,6 @@ private:
     uint64_t getCurrentTimestamp() const;
     void logHealthStatus() const;
 };
+
+} // namespace kiosk
+} // namespace kinect

@@ -6,7 +6,13 @@
 #include <cstdint>
 #include <chrono>
 #include <string>
+
+#ifdef HAVE_OPENCV
 #include <opencv2/opencv.hpp>
+#else
+// Forward declare cv::Mat for compilation without OpenCV
+namespace cv { class Mat; }
+#endif
 
 namespace kinect {
 namespace game {

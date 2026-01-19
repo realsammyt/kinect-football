@@ -1,0 +1,53 @@
+# Build directories
+build/
+out/
+cmake-build-*/
+
+# IDE files
+.vs/
+.vscode/
+*.sln
+*.vcxproj*
+*.user
+
+# Binary files
+*.exe
+*.dll
+*.lib
+*.pdb
+*.obj
+*.o
+*.a
+
+# Azure Kinect model files (too large for git)
+*.onnx
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*~
+
+# Visual Studio
+*.suo
+*.opensdf
+*.sdf
+ipch/
+Debug/
+Release/
+x64/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+
+# FetchContent downloads
+_deps/

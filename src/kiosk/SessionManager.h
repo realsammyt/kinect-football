@@ -56,6 +56,9 @@ public:
     void setShareData(const std::string& sessionId,
                       const std::string& method,
                       const std::string& url);
+    void setPlayerOptions(const std::string& sessionId,
+                          JerseyColor jersey,
+                          BackgroundTheme background);
 
     // Analytics
     struct Analytics {

@@ -58,6 +58,19 @@ enum class KickType {
     CHIP          // Lofted shot
 };
 
+// Player jersey color options
+enum class JerseyColor {
+    TEAL = 0,      // Default - Team Teal
+    CORAL = 1,     // Team Coral (Red/Pink)
+    GOLD = 2       // Team Gold (Yellow)
+};
+
+// Background theme options
+enum class BackgroundTheme {
+    NIGHT = 0,     // Dark navy (default)
+    DAY = 1        // Light sky blue
+};
+
 // Joint data with velocity tracking
 struct JointData {
     k4a_float3_t position;
@@ -176,6 +189,10 @@ struct SessionData {
 
     ChallengeType selectedChallenge;
     ChallengeResult result;
+
+    // Player customization options
+    JerseyColor selectedJersey = JerseyColor::TEAL;
+    BackgroundTheme selectedBackground = BackgroundTheme::NIGHT;
 
     // Sharing
     bool wasShared;

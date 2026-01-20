@@ -89,5 +89,28 @@ inline void getBackgroundColor(float* out) {
     out[3] = 1.0f;             // A
 }
 
+// Jersey color palette
+namespace jerseys {
+    constexpr ImU32 TEAL = IM_COL32(0, 212, 170, 255);      // #00D4AA
+    constexpr ImU32 CORAL = IM_COL32(255, 107, 107, 255);   // #FF6B6B
+    constexpr ImU32 GOLD = IM_COL32(255, 215, 0, 255);      // #FFD700
+
+    // Glow variants (reduced alpha)
+    constexpr ImU32 TEAL_GLOW = IM_COL32(0, 212, 170, 80);
+    constexpr ImU32 CORAL_GLOW = IM_COL32(255, 107, 107, 80);
+    constexpr ImU32 GOLD_GLOW = IM_COL32(255, 215, 0, 80);
+}
+
+// Background theme colors (RGBA float arrays for D3D clear)
+namespace backgrounds {
+    inline void getNightColor(float* out) {
+        out[0] = 0.039f;  out[1] = 0.086f;  out[2] = 0.157f;  out[3] = 1.0f;
+    }
+
+    inline void getDayColor(float* out) {
+        out[0] = 0.529f;  out[1] = 0.808f;  out[2] = 0.922f;  out[3] = 1.0f;
+    }
+}
+
 } // namespace theme
 } // namespace kinect

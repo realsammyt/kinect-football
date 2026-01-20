@@ -5,6 +5,8 @@
 #include "core/PlayerTracker.h"
 #include "core/RingBuffer.h"
 #include "DisplayConfig.h"
+#include "common.h"
+#include <imgui.h>
 
 #include <d3d11.h>
 #include <dxgi.h>
@@ -32,6 +34,7 @@ namespace gui {
 enum class GameState {
     Attract,            // Idle, showing attract loop
     PlayerDetected,     // Player entered, brief welcome
+    SelectingOptions,   // Jersey and background selection (NEW)
     SelectingChallenge, // Touch screen to select challenge
     Countdown,          // 3-2-1 countdown
     Playing,            // Active gameplay
@@ -156,6 +159,10 @@ private:
     std::chrono::steady_clock::time_point stateStartTime_;
     float attractIdleTime_ = 0.0f;
 
+    // Player customization state
+    JerseyColor selectedJersey_ = JerseyColor::TEAL;
+    BackgroundTheme selectedBackground_ = BackgroundTheme::NIGHT;
+
     // Thread functions
     void captureThreadFunc();
     void analysisThreadFunc();
@@ -173,6 +180,7 @@ private:
     // Rendering
     void renderAttractMode();
     void renderPlayerDetected();
+    void renderOptionsSelect();   // NEW: Jersey and background selection
     void renderChallengeSelect();
     void renderCountdown();
     void renderGameplay();
@@ -186,6 +194,12 @@ private:
     void renderPlayerSkeleton(const core::BodyData& body);
     void renderDemoSkeleton();
     void renderScoreDisplay();
+
+    // Player customization helpers
+    ImU32 getJerseyColor(JerseyColor jersey) const;
+    ImU32 getJerseyGlowColor(JerseyColor jersey) const;
+    void getBackgroundClearColor(BackgroundTheme theme, float* out) const;
+    void renderMiniSkeleton(ImDrawList* drawList, ImVec2 center, float scale, ImU32 color);
 
     // State transitions
     void transitionTo(GameState newState);

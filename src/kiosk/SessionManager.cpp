@@ -440,5 +440,20 @@ void SessionManager::logSessionEnd(const SessionData& session) {
     LOG_INFO("  Shared: " << (session.wasShared ? "Yes" : "No"));
 }
 
+void SessionManager::setPlayerOptions(const std::string& sessionId,
+                                      JerseyColor jersey,
+                                      BackgroundTheme background) {
+    std::lock_guard<std::mutex> lock(sessionsMutex_);
+
+    auto it = sessions_.find(sessionId);
+    if (it != sessions_.end()) {
+        it->second.selectedJersey = jersey;
+        it->second.selectedBackground = background;
+        LOG_INFO("Player options set for session " << sessionId
+                 << ": jersey=" << static_cast<int>(jersey)
+                 << ", background=" << static_cast<int>(background));
+    }
+}
+
 } // namespace kiosk
 } // namespace kinect

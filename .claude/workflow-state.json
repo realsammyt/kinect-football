@@ -1,27 +1,15 @@
 {
-  "currentStage": "complete",
-  "feature": "v1.1 Improvements - Performance, UX, UI, Visual Fidelity",
-  "branch": "main",
-  "startedAt": "2026-01-19T04:00:00.000Z",
+  "currentStage": "design",
+  "feature": "Intro Options Screen - Jersey & Background Selection",
+  "branch": "feature/intro-options",
+  "startedAt": "2026-01-20T10:00:00.000Z",
   "history": [
     {"stage": "complete", "completedAt": "2026-01-19T03:40:00.000Z", "notes": "v1.0.0 released"},
-    {"stage": "review", "completedAt": "2026-01-19T04:10:00.000Z", "notes": "4 expert reviews completed"},
-    {"stage": "plan", "completedAt": "2026-01-19T04:15:00.000Z", "notes": "Plan created"},
-    {"stage": "design", "completedAt": "2026-01-19T04:20:00.000Z", "notes": "Design document created"},
-    {"stage": "implement", "completedAt": "2026-01-19T04:40:00.000Z", "notes": "All improvements implemented"},
-    {"stage": "test", "completedAt": "2026-01-19T04:45:00.000Z", "notes": "Build passed"},
-    {"stage": "pr", "completedAt": "2026-01-19T04:50:00.000Z", "notes": "PR #1 created"},
-    {"stage": "push", "completedAt": "2026-01-19T04:55:00.000Z", "notes": "Merged to main"}
+    {"stage": "complete", "completedAt": "2026-01-19T04:55:00.000Z", "notes": "v1.1.0 merged"},
+    {"stage": "plan", "completedAt": "2026-01-20T10:05:00.000Z", "notes": "Plan created with expert agents"}
   ],
   "blockers": [],
-  "planPath": ".claude/plans/v1.1-improvements.md",
-  "designPath": ".claude/designs/v1.1-improvements.md",
-  "prNumber": 1,
-  "prUrl": "https://github.com/realsammyt/kinect-football/pull/1",
-  "improvementAreas": [
-    "performance",
-    "ux",
-    "ui",
-    "visual-fidelity"
-  ]
+  "planPath": ".claude/plans/intro-options.md",
+  "designPath": ".claude/designs/intro-options.md",
+  "prNumber": null
 }

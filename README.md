@@ -162,7 +162,14 @@ The application uses a FIFA 2026-inspired color palette:
 
 ## Version History
 
-### v1.1.0 (Current)
+### v1.2.0 (Current)
+- Added intro options screen with player customization
+- 3 jersey color options (Teal, Coral, Gold)
+- 2 background themes (Day/Night)
+- Live preview of selections
+- 30-second auto-continue timeout
+
+### v1.1.0
 - Fixed deadlock potential in SessionManager
 - Added DirectX error handling
 - Implemented FIFA 2026 visual theme
